@@ -1,0 +1,36 @@
+test_stream_create:
+  - name: 正确创建群控会话
+    mark: smoke
+    request:
+      url: /v1/multiple/stream/session/create
+      method: post
+      async: false
+      data:
+        masterInstanceId: {% set id = instance_ids | random_one %}{{ id }}
+        slaveInstanceIds: {{ instance_ids.copy() | remove_one(id)}}
+    before_request:
+    after_request:
+    extract:
+      - sessionId:
+          type: json
+          path: $.data.sessionId
+          index: 0
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+      - sessionId:
+          type: json
+          path: $.data.sessionId
+          index: -1
+          sign: ne
+          value: false
+      - failInstanceIds:
+          type: json
+          path: $.data.failInstanceIds
+          index: 0
+          sign: eq
+          value: []

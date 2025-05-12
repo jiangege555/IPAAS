@@ -1,0 +1,13 @@
+.side-nav__brand {
+background: url('allure_logo.jpg') no-repeat left center !important;
+margin-left: 40px;
+height: 50px;
+background-size: contain !important;
+}
+.side-nav__brand span{
+display: none;
+}
+/*.side-nav__brand:after{
+content: "算筹";
+margin-left: 20px;
+}*/

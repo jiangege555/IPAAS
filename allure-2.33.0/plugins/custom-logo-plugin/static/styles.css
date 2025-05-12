@@ -1,0 +1,21 @@
+.side-nav__brand{
+    background: url('allure_logo.jpg') no-repeat left center !important;
+    margin‐left: 10px;
+    margin-right:10px;
+    height: 90px;
+    background‐size: contain !important;
+    }
+
+.side-nav__brand-text{
+    display: none;
+    }
+
+.side-nav__brand span{
+    display:none;
+}
+
+/*.side-nav__brand:after{*/
+/*    content:"瑞驰";*/
+/*    margin-left:60px;*/
+/*    line-height:90px;*/
+/*}*/

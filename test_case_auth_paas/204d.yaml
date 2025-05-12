@@ -1,0 +1,202 @@
+test_204d:
+  - name: 实例执行命令（异步）V2
+    mark: [smoke, pressure]
+    request:
+      url: /v2/instance/cmd/async/run
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+        command: date
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 推流属性设置（异步）
+    mark: [smoke, pressure]
+    request:
+      url: /v2/instance/stream/prop/set/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+        resolution: {% set resolution = ['720*1280', '1080*1920'] %} {{resolution | random_one }}
+        dpi: {% set dpi = [320, 240] %} {{dpi | random_one }}
+        fps: {% set fps = [30, 60] %} {{fps | random_one }}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 系统属性设置（异步）
+    mark: [smoke, pressure]
+    request:
+      url: /v2/instance/system/prop/set/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+        properties: {test: "{{ x | random_int(11111111,22222222)}}" }
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例换肤（异步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/skin/refresh/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+        brand: $brand
+        model: $model
+    before_request: [get_machine_list]
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例ADB服务启动（异步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adbd/start/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例ADB服务停止（异步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adbd/stop/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例SSH服务启动（异步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/sshd/start/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例SSH服务停止（异步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/sshd/stop/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+
+  - name: 实例开启ADB鉴权（异步）
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adb/auth/start/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例关闭ADB鉴权（异步）
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adb/auth/stop/async
+      method: post
+      async: true
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+
+
+

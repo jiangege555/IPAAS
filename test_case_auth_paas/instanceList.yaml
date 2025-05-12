@@ -1,0 +1,49 @@
+test_instance_list:
+  - name: 不传任何参数查询所有实例
+    mark: other
+    request:
+      url: /v1/instance/list
+      method: post
+      async: false
+      data:
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+      - total:
+          type: json
+          path: $.data.total
+          index: 0
+          sign: gt
+          value: 1
+
+  - name: 查询指定实例
+    mark: c
+    request:
+      url: /v1/instance/list
+      method: post
+      async: false
+      data:
+        instanceIds: {{instance_ids}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+      - total:
+          type: json
+          path: $.data.total
+          index: 0
+          sign: eq
+          value: {{instance_ids | length}}

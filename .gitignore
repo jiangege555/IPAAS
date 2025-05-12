@@ -1,0 +1,12 @@
+# 忽略整个虚拟环境
+venv/
+
+# 忽略 Python 编译文件
+*.pyc
+__pycache__/
+
+# 忽略大型二进制文件
+*.dll
+*.pyd
+*.so
+*.bin

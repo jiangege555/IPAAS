@@ -1,0 +1,1 @@
+..\allure-2.17.3\bin\allure open html
