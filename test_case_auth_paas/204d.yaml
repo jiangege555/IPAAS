@@ -197,6 +197,165 @@ test_204d:
           sign: eq
           value: 0
 
+  - name: 实例开启ADB鉴权（同步）
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adb/auth/start/sync
+      method: post
+      async: false
+      data:
+        instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例关闭ADB鉴权（同步）
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adb/auth/stop/sync
+      method: post
+      async: false
+      data:
+        instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
 
 
+  - name: 实例ADB服务启动（同步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adbd/start/sync
+      method: post
+      async: false
+      data:
+        instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
 
+  - name: 实例ADB服务停止（同步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/adbd/stop/sync
+      method: post
+      async: false
+      data:
+        instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例SSH服务启动（同步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/sshd/start/sync
+      method: post
+      async: false
+      data:
+        instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例SSH服务停止（同步）V2
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/sshd/stop/sync
+      method: post
+      async: false
+      data:
+        instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例批量同步截图V2-once
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/screen/capture/sync/batch
+      method: post
+      async: false
+      data:
+        instanceIds: {{instance_ids}}
+        quality: 80
+        type: ONCE
+        interval: 200
+        expire: 3600000
+        orientation: 2
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例批量同步截图V2-AUTO
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/screen/capture/sync/batch
+      method: post
+      async: false
+      data:
+        instanceIds: {{instance_ids}}
+        quality: 80
+        type: AUTO
+        interval: 200
+        expire: 3600000
+        orientation: 2
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0

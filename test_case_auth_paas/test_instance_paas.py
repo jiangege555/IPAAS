@@ -389,6 +389,20 @@ class TestInstancePaas(BaseTestCasePaas):
         }
         self.async_run_paas(uri, data)
 
+    @allure.story("v204d版本接口")
+    # @allure.severity("critical")
+    @pytest.mark.parametrize("case_info", [
+        pytest.param(
+            case,  # 直接传递整个字典
+            marks=[getattr(pytest.mark, mark) for mark in case.get('mark', [])],  # 动态获取 mark
+            id=case["name"]
+        )
+        for case in read_testcase_yaml(f"{os.getcwd()}/test_case_auth_paas/204d.yaml", "test_204d",
+                                       global_data_paas)
+    ])
+    def test_v204d_paas(self, case_info):
+        self.case_handle(case_info)
+
     @allure.title("实例备份")
     # @allure.severity("normal")
     @pytest.mark.important
