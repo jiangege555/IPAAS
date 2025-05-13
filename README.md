@@ -15,13 +15,25 @@ test_case_auth_paas：PAAS平台接口测试包（test_case_auth_iaas则为IAAS�
 
 def main(env, platform, repeat=None, mark="all"):
 
-​	:param env: 环境参数 test | poc | prod
+​	:param env: 环境参数 test | poc | prod（string）
 
-​	:param platform: 平台参数 iaas | paas | all
+​	:param platform: 平台参数 iaas | paas | all（string）
 
-​	:param repeat: 是否重复执行，用于压测，默认不重复，传重复执行的次数
+​	:param repeat: 是否重复执行，用于压测，默认不重复，传重复执行的次数（int）
 
-​	:param mark: 指定要运行的用例标记，默认all标签（在测试用例类上面已经默认打上了all标签）
+​	:param mark: 指定要运行的用例标记，默认all标签（在测试用例类上面已经默认打上了all标签）（string）
+
+mark传参格式：字符串，支持单标签、多标签逻辑组合
+
+​	传"smoke"：执行具有 smoke 标记的用例
+
+​	传"smoke and regression"：执行同时具有 smoke 和 regression 标记的用例
+
+​	传"smoke or ui"：执行有 smoke 或 ui 标记的用例
+
+​	传"regression and not slow"：执行有 regression 但没有 slow 标记的用例
+
+​	传"(smoke or quick) and not slow"：执行 (smoke 或 quick) 且 (非 slow) 的用例
 
 **2、pytest.ini文件**
 
