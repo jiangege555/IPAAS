@@ -1,6 +1,8 @@
-import allure, jsonpath, requests, time, re
+import allure, jsonpath, requests, time, re, json
 from test_case_auth_iaas import logger, global_data_iaas
+from myutils.my_request import my_request
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from string import Template
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -100,49 +102,6 @@ class BaseTestCaseIaas:
         else:
             assert False, logger.error(f'断言任务查询接口status_code失败,status_code为{code},res == {res.text}')
 
-    # @timeout_decorator(300)
-    # def checkProgressIaas(self, request_id, time_sleep=5):
-    #     """
-    #     任务进度查询，将同步返回的request_id列表传入，查询每个任务的状态
-    #     :param request_id: List格式
-    #     :param time_sleep: 默认5秒查询一次
-    #     :return:
-    #     """
-    #     logger.info(f"""查询中的任务id--{str(request_id).replace("'", '"')}""")
-    #     sign = self.postSign({"request_id": request_id})
-    #     global_data["header"]["Sign"] = sign
-    #     logger.info(f"""请求headers--{str(global_data.get("header")).replace("'", '"')}""")
-    #     url = self.url + "/openApi/CheckProgress"
-    #     data = {"request_id": request_id}
-    #     try:
-    #         while True:
-    #             res = requests.post(url=url, headers=global_data.get("header"), json=data)
-    #             res.raise_for_status()  # 抛出HTTP错误
-    #             res_json = res.json()
-    #             code = jsonpath.jsonpath(res_json, "$.status_code")[0]
-    #             if str(code) == '0':
-    #                 task_codes = jsonpath.jsonpath(res_json, "$..code")
-    #                 # 判断任务是否全部执行完成
-    #                 if 2 not in task_codes and 3 not in task_codes:
-    #                     subTaskFailCount = task_codes.count(0)
-    #                     # 判断子任务是否有失败
-    #                     if subTaskFailCount != 0:
-    #                         assert subTaskFailCount == 0, logger.error(f'任务执行存在失败,失败数量:{subTaskFailCount},res == {res.text}')
-    #                         break
-    #                     else:
-    #                         assert True
-    #                         logger.info(f'断言任务查询为全部执行成功,res == {res.text}')
-    #                         break
-    #                 else:
-    #                     time.sleep(time_sleep)
-    #                     continue
-    #             else:
-    #                 assert str(code) == '0', logger.error(f'断言任务查询接口status_code失败,status_code为{code},res == {res.text}')
-    #                 break
-    #     except Exception as e:
-    #         logger.error(f"任务进度查询接口发生错误：{e}")
-    #         assert False, logger.error(f'断言任务查询接口发生错误,res == {res.text}')
-
     def async_run_iaas(self, uri, data, method="post", time_sleep=5):
         """
         异步接口,做status_code和request_id断言
@@ -219,6 +178,121 @@ class BaseTestCaseIaas:
         res.raise_for_status()  # 抛出HTTP错误
         return res.json()
 
+    def case_handle(self, case_info, time_sleep=5):
+        """
+        参数化执行测试用例时，yaml测试用例的处理
+        :param case_info:
+        :return:
+        """
+        name = case_info.get("name")
+        allure.dynamic.title(name)
+        url = self.url + case_info.get("request").get("url")
+        data = case_info.get("request").get("data")
+        method = case_info.get("request").get("method")
+        is_async = case_info.get("request").get("async")
+        before_request = case_info.get("before_request")
+        if before_request:
+            for func in before_request:
+                if hasattr(self, func):
+                    func = getattr(self, func)
+                    func()
+                    temp = Template(json.dumps(data))
+                    data = json.loads(temp.safe_substitute(global_data_iaas))
+        after_request = case_info.get("after_request")
+        extract = case_info.get("extract")
+        validate = case_info.get("validate")
+        if not data:
+            data = {}
+        allure.attach(f"""{str(data).replace("'", '"')}""", "传参")
+        sign = self.postSign(data)
+        global_data_iaas["header"]["Sign"] = sign
+        res = my_request(url=url, data=data, method=method, headers=global_data_iaas.get("header"), verify=False)
+        logger.info(f'请求url--{res.url}')
+        logger.info(f"""请求headers--{str(global_data_iaas.get("header")).replace("'", '"')}""")
+        allure.attach(f"{res.text}", "返回值")
+        res.raise_for_status()  # 抛出HTTP错误
+        res_json = res.json()
+        if extract:
+            for item in extract:
+                if list(item.values())[0].get("type") == "json":
+                    self.extract_json(res=res_json, **item)
+        if after_request:
+            for func in after_request:
+                if hasattr(self, func):
+                    func = getattr(self, func)
+                    func()
+        if validate:
+            for item in validate:
+                if list(item.values())[0].get("type") == "json":
+                    self.validate_json(res=res_json, **item)
+        if is_async:
+            taskId = jsonpath.jsonpath(res_json, "$..taskId")
+            assert taskId != False, logger.error(f'断言taskId失败,taskId为{taskId}')
+            logger.info(f'断言taskId成功,taskId == {taskId[0]}')
+            self.checkProgressIaas(taskId[0], time_sleep)
+
+    def extract_json(self, res, **kwargs):
+        try:
+            for k, v in kwargs.items():
+                path = v.get("path")
+                index = v.get("index")
+                value = jsonpath.jsonpath(res, path)
+                if value != False:
+                    if index == -1:
+                        global_data_iaas[k] = value
+                    else:
+                        value = value[index]
+                        global_data_iaas[k] = value
+                    logger.info(f'提取的变量为{k},值为{value}')
+                else:
+                    logger.error(f'提取value失败,值为{value}')
+        except Exception as e:
+            logger.error(f'提取value异常,{repr(e)}')
+
+    def validate_json(self, res, **kwargs):
+        try:
+            for k, v in kwargs.items():
+                path = v.get("path")
+                index = v.get("index")
+                sign = v.get("sign")
+                value_expect = v.get("value")
+                value_actual = jsonpath.jsonpath(res, path)
+                if value_actual != False:
+                    if index == -1:
+                        value_actual = value_actual
+                    else:
+                        value_actual = value_actual[index]
+                    if sign == "eq":
+                        assert value_actual == value_expect, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual}==预期值{value_expect}')
+                    elif sign == "ne":
+                        assert value_actual != value_expect, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual}!=预期值{value_expect}')
+                    elif sign == "lt":
+                        assert value_actual < value_expect, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual}<预期值{value_expect}')
+                    elif sign == "gt":
+                        assert value_actual > value_expect, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual}>预期值{value_expect}')
+                    elif sign == "le":
+                        assert value_actual <= value_expect, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual}<=预期值{value_expect}')
+                    elif sign == "ge":
+                        assert value_actual >= value_expect, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual}>=预期值{value_expect}')
+                    elif sign == "in":
+                        assert value_expect in value_actual, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual} in 预期值{value_expect}')
+                    elif sign == "nin":
+                        assert value_expect not in value_actual, logger.error(f'断言失败,实际值{value_actual},预期值{value_expect}')
+                        logger.info(f'断言成功,实际值{value_actual} not in 预期值{value_expect}')
+                    else:
+                        assert False, logger.error(f'断言处理失败,实际值{value_actual},预期值{value_expect},sign为{sign}')
+                else:
+                    assert False, logger.error(f'断言value失败,值为{value_actual}')
+        except Exception as e:
+            assert False, logger.error(f'断言处理异常,{repr(e)}')
+            
     # @timeout_decorator(180)
     def check_image_upload_status_iaas(self):
         """

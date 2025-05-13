@@ -8,7 +8,7 @@ from functools import reduce
 
 host = 'localhost'
 port = '63342'
-allure_url = f'http://{host}:{port}/API_Test_Auto/report/html'
+allure_url = f'http://{host}:{port}/IPAAS/report/html'
 BASEDIR = os.getcwd()
 # print(BASEDIR)
 # 报告的路径
@@ -274,8 +274,10 @@ def worker_repeat(*args):
 # 程序入口
 def main(env, platform, repeat=None, mark="all"):
     """
-    :param env: 环境参数 test | poc | prod
-    :param platform: 平台参数 iaas | paas | all
+    :param env: 环境参数 test | poc | prod（string）
+    :param platform: 平台参数 iaas | paas | all（string）
+    :param repeat: 是否重复执行，用于压测，默认不重复，传重复执行的次数（int）
+​	:param mark: 指定要运行的用例标记，默认all标签（在测试用例类上面已经默认打上了all标签）（string）
     :return:
     测试用例执行命令
     test_case_auth_paas表示执行test_case_auth_paas包下的所有用例文件
@@ -307,10 +309,9 @@ def main(env, platform, repeat=None, mark="all"):
                 add_label(path, i + 1)
         elif platform.lower() == 'paas':
             paas_init_repeat()
-            # thread_paas = threading.Thread(target=worker, args=('--allure-severities=critical', f"--count={repeat}", "--repeat-scope=session", os.path.join(BASEDIR, 'test_case_auth_paas'),))
             for i in range(int(repeat)):
                 path = f"{ALLURE_PATH}_{str(i+1)}"
-                thread_paas = threading.Thread(target=worker_repeat, args=(f"-m {mark}", f'--alluredir={path}', "--clean-alluredir", os.path.join(BASEDIR, 'test_case_auth_paas/test_pressure.py'), os.path.join(BASEDIR, 'test_case_auth_paas/test_instance_app_paas.py'),))
+                thread_paas = threading.Thread(target=worker_repeat, args=(f"-m {mark}", f'--alluredir={path}', "--clean-alluredir", os.path.join(BASEDIR, 'test_case_auth_paas'),))
                 thread_paas.start()
                 thread_paas.join()
                 add_label(path, i+1)
@@ -339,7 +340,6 @@ def main(env, platform, repeat=None, mark="all"):
         elif platform.lower() == 'paas':
             paas_init()
             thread_paas = threading.Thread(target=worker, args=(f"-m {mark}", os.path.join(BASEDIR, 'test_case_auth_paas'),))
-            # thread_paas = threading.Thread(target=worker, args=(f"-m {mark}", os.path.join(BASEDIR, 'test_case_auth_paas/test_instance_paas.py::TestInstancePaas::test_list_paas'),))
             thread_paas.start()
             thread_paas.join()
         elif platform.lower() == 'all':
@@ -364,21 +364,8 @@ def main(env, platform, repeat=None, mark="all"):
         set_result()
     # 再命令行执行报告生成命令
     # command = f"{os.getcwd()}/allure-2.17.3/bin/allure generate {ALLURE_PATH} -o {os.path.join(ALLURE_HTML_DIR, str(buildOrder))} --clean"
-    # command = f"{os.getcwd()}/allure-2.17.3/bin/allure generate {reduce(lambda x, y: x + ' ' + y, results)} -o {os.path.join(ALLURE_HTML_DIR, str(buildOrder))} --clean"
     command = f"{os.getcwd()}/allure-2.33.0/bin/allure generate {ALLURE_PATH}* -o {os.path.join(ALLURE_HTML_DIR, str(buildOrder))} --clean"
-    # print(f"拼接后的命令是:{command}")
     os.system(command)
-    # categories = [{
-    #     "name": "batch",
-    #     "matchedStatuses": ["passed", "failed", "broken", "skipped"],
-    #     # "messageRegex": ".*",
-    #     # "traceRegex": ".*",
-    #     "labels": ["batch"]
-    # }]
-    # with open(f"{os.path.join(ALLURE_HTML_DIR, str(buildOrder))}/categories.json", "w") as f:
-    #     json.dump(categories, f)
-    # cmd = f"{os.getcwd()}/allure-2.17.3/bin/allure serve {os.path.join(ALLURE_HTML_DIR, str(buildOrder))}"
-    # os.system(cmd)
     # 执行完毕后再调用update_trend_data()，处理报告数据
     all_data, reportUrl = update_trend_data(buildOrder, old_data, env)
     # 自动打开报告页面
@@ -388,6 +375,3 @@ def main(env, platform, repeat=None, mark="all"):
 if __name__ == '__main__':
     main("test", "paas")
     # main("test", "paas", repeat=30, mark="pressure")
-    # ALLURE_PATH = os.path.join(ALLURE_RESULT, str(1742374122))
-    # command = f"{os.getcwd()}/allure-2.17.3/bin/allure generate {ALLURE_PATH} -o {os.path.join(ALLURE_HTML_DIR, str(27))} --clean"
-    # os.system(command)
