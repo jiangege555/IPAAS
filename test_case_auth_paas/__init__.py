@@ -8,10 +8,9 @@ vendor、idc、card_type、instance_type：订购相关的供应商、实例信�
 """
 # 测试环境
 env_test = {
-    "url": "http://36.25.240.241:33313/api/blade-paas",
+    "url": "http://xxxx/api/blade-paas",
     "header": {
-        "Ak": "3ef0ac13-8771-4ba7-9ed3-9d7a981ac5fc",
-        # "Ak": "6b7612ae-3f1a-4d55-9fc8-3d4f3470f974",
+        "Ak": "",
         "Content-Type": "application/json",
         "Version": "1",
         "Sign": "111111"
@@ -27,9 +26,9 @@ env_test = {
 }
 # poc环境
 env_poc = {
-    "url": "http://101.69.168.129:33280/api/blade-paas",
+    "url": "http://xxxx/api/blade-paas",
     "header": {
-        "Ak": "75e039fd-a8f8-45fc-9127-b379fc5ca164",
+        "Ak": "",
         "Content-Type": "application/json",
         "Version": "1",
         "Sign": "111111"
@@ -44,9 +43,9 @@ env_poc = {
 }
 # 生产环境
 env_prod = {
-    "url": "https://pass-sjzb.phone.armclouding.com:49443/api/blade-paas",
+    "url": "https://xxxx/api/blade-paas",
     "header": {
-        "Ak": "ec75a80b-1e14-4bc9-84cd-6d9f82f0994b",
+        "Ak": "",
         "Content-Type": "application/json",
         "Version": "1",
         "Sign": "111111"
