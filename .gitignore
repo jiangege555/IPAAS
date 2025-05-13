@@ -1,6 +1,6 @@
 # 忽略整个虚拟环境
 venv/
-
+.idea/
 # 忽略 Python 编译文件
 *.pyc
 __pycache__/
