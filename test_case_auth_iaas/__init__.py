@@ -9,9 +9,9 @@ url、Ak：环境信息，确保ak有实例
 """
 # 测试环境
 env_test = {
-    "url": "http://xxxx/api/blade-pass",
+    "url": "http://36.25.240.241:38080/api/blade-pass",
     "header": {
-        "Ak": "",
+        "Ak": "6fe85202-5992-4b10-9b10-eeba5e0124ec",
         "Content-Type": "application/json",
         "Version": "1",
         "Sign": "111111"
@@ -40,9 +40,9 @@ env_test = {
 }
 # poc环境
 env_poc = {
-    "url": "http://xxxx/api/blade-pass",
+    "url": "http://36.25.252.233:51038/api/blade-pass",
     "header": {
-        "Ak": "",
+        "Ak": "df401528-2ae1-4afc-acbc-6b5bbd249259",
         "Content-Type": "application/json",
         "Version": "1",
         "Sign": "111111"
@@ -71,9 +71,9 @@ env_poc = {
 }
 # 生产环境
 env_prod = {
-    "url": "https://xxxx/api/blade-pass",
+    "url": "https://openaccess.armclouding.com:58172/api/blade-pass",
     "header": {
-        "Ak": "",
+        "Ak": "05fcc5c8-1d6b-4be2-afce-de3124eed19d",
         "Content-Type": "application/json",
         "Version": "1",
         "Sign": "111111"

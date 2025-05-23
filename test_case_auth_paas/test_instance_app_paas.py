@@ -1,9 +1,6 @@
-import jsonpath, allure, random, requests, pytest
+import jsonpath, allure, pytest
 from test_case_auth_paas import logger
 from test_case_auth_paas.baseTestCasePaas import BaseTestCasePaas, global_data_paas
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 @pytest.mark.run(order=4)

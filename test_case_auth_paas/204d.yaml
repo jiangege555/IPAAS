@@ -158,7 +158,6 @@ test_204d:
           sign: eq
           value: 0
 
-
   - name: 实例开启ADB鉴权（异步）
     mark: [ smoke, pressure ]
     request:
@@ -235,7 +234,6 @@ test_204d:
           sign: eq
           value: 0
 
-
   - name: 实例ADB服务启动（同步）V2
     mark: [ smoke, pressure ]
     request:
@@ -301,6 +299,25 @@ test_204d:
       async: false
       data:
         instanceId: {{instance_ids | random_one}}
+    before_request:
+    after_request:
+    extract:
+    validate:
+      - status:
+          type: json
+          path: $.status
+          index: 0
+          sign: eq
+          value: 0
+
+  - name: 实例批量同步截图V2-只传instanceIds
+    mark: [ smoke, pressure ]
+    request:
+      url: /v2/instance/screen/capture/sync/batch
+      method: post
+      async: false
+      data:
+        instanceIds: {{instance_ids}}
     before_request:
     after_request:
     extract:

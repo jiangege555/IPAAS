@@ -1,9 +1,7 @@
-import jsonpath, allure, random, requests, pytest
+import jsonpath, allure, random, pytest
 from test_case_auth_iaas import logger
 from test_case_auth_iaas.baseTestCaseIaas import BaseTestCaseIaas, global_data_iaas
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from myutils.my_request import session
 
 
 @pytest.mark.run(order=8)
@@ -710,7 +708,7 @@ class TestInstanceIaas(BaseTestCaseIaas):
         allure.attach(f"""{str(data).replace("'", '"')}""", "传参")
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f"""请求headers--{str(global_data_iaas.get("header")).replace("'", '"')}""")
         allure.attach(f"{res.text}", "返回值")
@@ -733,7 +731,7 @@ class TestInstanceIaas(BaseTestCaseIaas):
         }
         sign = self.postSign(data_reboot)
         global_data_iaas["header"]["Sign"] = sign
-        requests.post(url=self.url + uri_reboot, json=data_reboot, headers=global_data_iaas.get("header"), verify=False)
+        session.post(url=self.url + uri_reboot, json=data_reboot, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'已重启实例触发升级')
         # 异步任务的断言
         self.checkProgressIaas(request_id, 10)
@@ -820,7 +818,7 @@ class TestInstanceIaas(BaseTestCaseIaas):
         allure.attach(f"{data}", "传参")
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f'请求headers--{res.headers}')
         # logger.info(f'test_instance_list res为{res.text}')

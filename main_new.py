@@ -259,6 +259,7 @@ def paas_init_repeat():
     global_data_paas["instance_ids"] = paas_instance
     paas_logger.info(f'提取的paas instance_ids: {paas_instance}')
 
+
 def worker(*args):
     """
     --allure-severities为用例等级，对应用例上@allure.severity
@@ -266,6 +267,7 @@ def worker(*args):
     :return:
     """
     pytest.main(['-sv', f'--alluredir={ALLURE_PATH}', *args])
+
 
 def worker_repeat(*args):
     pytest.main(['-sv', *args])
@@ -277,9 +279,9 @@ def main(env, platform, repeat=None, mark="all"):
     :param env: 环境参数 test | poc | prod（string）
     :param platform: 平台参数 iaas | paas | all（string）
     :param repeat: 是否重复执行，用于压测，默认不重复，传重复执行的次数（int）
-​	:param mark: 指定要运行的用例标记，默认all标签（在测试用例类上面已经默认打上了all标签）（string）
+    :param mark: 指定要运行的用例标记，默认all标签（在测试用例类上面已经默认打上了all标签）（string）
     :return:
-    测试用例执行命令
+    测试用例执行命令可在方法中对应位置修改，默认测试包下所有py测试文件
     test_case_auth_paas表示执行test_case_auth_paas包下的所有用例文件
     test_case_auth_iaas/test_adb.py表示执行test_case_auth_iaas/test_adb.py文件里的用例
     test_case_auth_iaas/test_instance_paas.py::TestInstancePaas::test_instance_package表示执行test_instance_package用例

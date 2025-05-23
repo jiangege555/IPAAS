@@ -1,10 +1,8 @@
-import allure, jsonpath, requests, time, re, json
+import allure, jsonpath, time, re, json
 from test_case_auth_iaas import logger, global_data_iaas
-from myutils.my_request import my_request
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from myutils.my_request import session
 from string import Template
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from myutils.my_request import my_request
 
 
 class BaseTestCaseIaas:
@@ -23,7 +21,7 @@ class BaseTestCaseIaas:
         """
         global_data_iaas["header"]["Sign"] = "111111"
         url = self.url + "/openApi/post/sign"
-        res = requests.post(url=url, headers=global_data_iaas.get("header"), json=data, verify=False)
+        res = session.post(url=url, headers=global_data_iaas.get("header"), json=data, verify=False)
         try:
             res_text = res.text
             if res.status_code != 200:
@@ -44,7 +42,7 @@ class BaseTestCaseIaas:
         """
         global_data_iaas["header"]["Sign"] = "111111"
         url = self.url + "/openApi/get/sign"
-        res = requests.get(url=url, headers=global_data_iaas.get("header"), params=params, verify=False)
+        res = session.get(url=url, headers=global_data_iaas.get("header"), params=params, verify=False)
         try:
             res_text = res.text
             if res.status_code != 200:
@@ -75,7 +73,7 @@ class BaseTestCaseIaas:
             logger.info(f"""请求headers--{str(global_data_iaas.get("header")).replace("'", '"')}""")
         url = self.url + "/openApi/CheckProgress"
         data = {"request_id": request_id}
-        res = requests.post(url=url, headers=global_data_iaas.get("header"), json=data, verify=False)
+        res = session.post(url=url, headers=global_data_iaas.get("header"), json=data, verify=False)
         if self.count == 90:
             assert False, logger.error(f'任务执行超时,res == {res.text}')
         res.raise_for_status()  # 抛出HTTP错误
@@ -102,6 +100,49 @@ class BaseTestCaseIaas:
         else:
             assert False, logger.error(f'断言任务查询接口status_code失败,status_code为{code},res == {res.text}')
 
+    # @timeout_decorator(300)
+    # def checkProgressIaas(self, request_id, time_sleep=5):
+    #     """
+    #     任务进度查询，将同步返回的request_id列表传入，查询每个任务的状态
+    #     :param request_id: List格式
+    #     :param time_sleep: 默认5秒查询一次
+    #     :return:
+    #     """
+    #     logger.info(f"""查询中的任务id--{str(request_id).replace("'", '"')}""")
+    #     sign = self.postSign({"request_id": request_id})
+    #     global_data["header"]["Sign"] = sign
+    #     logger.info(f"""请求headers--{str(global_data.get("header")).replace("'", '"')}""")
+    #     url = self.url + "/openApi/CheckProgress"
+    #     data = {"request_id": request_id}
+    #     try:
+    #         while True:
+    #             res = session.post(url=url, headers=global_data.get("header"), json=data)
+    #             res.raise_for_status()  # 抛出HTTP错误
+    #             res_json = res.json()
+    #             code = jsonpath.jsonpath(res_json, "$.status_code")[0]
+    #             if str(code) == '0':
+    #                 task_codes = jsonpath.jsonpath(res_json, "$..code")
+    #                 # 判断任务是否全部执行完成
+    #                 if 2 not in task_codes and 3 not in task_codes:
+    #                     subTaskFailCount = task_codes.count(0)
+    #                     # 判断子任务是否有失败
+    #                     if subTaskFailCount != 0:
+    #                         assert subTaskFailCount == 0, logger.error(f'任务执行存在失败,失败数量:{subTaskFailCount},res == {res.text}')
+    #                         break
+    #                     else:
+    #                         assert True
+    #                         logger.info(f'断言任务查询为全部执行成功,res == {res.text}')
+    #                         break
+    #                 else:
+    #                     time.sleep(time_sleep)
+    #                     continue
+    #             else:
+    #                 assert str(code) == '0', logger.error(f'断言任务查询接口status_code失败,status_code为{code},res == {res.text}')
+    #                 break
+    #     except Exception as e:
+    #         logger.error(f"任务进度查询接口发生错误：{e}")
+    #         assert False, logger.error(f'断言任务查询接口发生错误,res == {res.text}')
+
     def async_run_iaas(self, uri, data, method="post", time_sleep=5):
         """
         异步接口,做status_code和request_id断言
@@ -115,9 +156,9 @@ class BaseTestCaseIaas:
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
         if method == "delete":
-            res = requests.delete(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+            res = session.delete(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         else:
-            res = requests.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+            res = session.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f"""请求headers--{str(global_data_iaas.get("header")).replace("'", '"')}""")
         allure.attach(f"{res.text}", "返回值")
@@ -152,7 +193,7 @@ class BaseTestCaseIaas:
         allure.attach(f"""{str(data).replace("'",'"')}""", "传参")
         sign = self.getSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.get(url=self.url + uri, params=data, headers=global_data_iaas.get("header"), verify=False)
+        res = session.get(url=self.url + uri, params=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f"""请求headers--{str(global_data_iaas.get("header")).replace("'", '"')}""")
         allure.attach(f"{res.text}", "返回值")
@@ -170,7 +211,7 @@ class BaseTestCaseIaas:
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
         # logger.info(f'sign 为{sign}')
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f"请求url--{res.url}")
         logger.info(f"""请求headers--{str(global_data_iaas.get("header")).replace("'", '"')}""")
         # logger.info(f'test_instance_list res为{res.text}')
@@ -309,7 +350,7 @@ class BaseTestCaseIaas:
         }
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'第{self.image_count}次查询镜像上传状态返回值为 {res.text}')
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
@@ -338,7 +379,7 @@ class BaseTestCaseIaas:
         }
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_iaas.get("header"), verify=False)
         logger.info(f'第{self.backup_count}次查询实例备份状态返回值为 {res.text}')
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
@@ -366,7 +407,7 @@ class BaseTestCaseIaas:
         }
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_iaas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_iaas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         logger.info(f'第{self.count}次查询应用上传状态返回值为 {res.text}')
@@ -394,7 +435,7 @@ class BaseTestCaseIaas:
         }
         sign = self.postSign(data)
         global_data_iaas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_iaas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_iaas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         logger.info(f'第{self.count}次查询文件上传状态返回值为 {res.text}')

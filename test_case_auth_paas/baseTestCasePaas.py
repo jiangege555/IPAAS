@@ -1,11 +1,11 @@
-import allure, jsonpath, requests, time, re, random, json
+import allure, jsonpath, time, re, random, json
 from test_case_auth_paas import logger, global_data_paas
 from myutils.my_request import my_request
-from myutils.my_template import MyTemplate
+from myutils.my_request import session
 from string import Template
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+# from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# # 禁用安全请求警告
+# requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class BaseTestCasePaas:
@@ -22,7 +22,7 @@ class BaseTestCasePaas:
         """
         url = self.url + "/v1/get/sign"
         global_data_paas["header"]["Sign"] = "111111"
-        res = requests.get(url=url, headers=global_data_paas.get("header"), params=data, verify=False)
+        res = session.get(url=url, headers=global_data_paas.get("header"), params=data, verify=False)
         try:
             res_text = res.text
             if res.status_code != 200:
@@ -42,7 +42,7 @@ class BaseTestCasePaas:
         """
         url = self.url + "/v1/post/sign"
         global_data_paas["header"]["Sign"] = "111111"
-        res = requests.post(url=url, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(url=url, headers=global_data_paas.get("header"), json=data, verify=False)
         try:
             res_text = res.text
             if res.status_code != 200:
@@ -72,7 +72,7 @@ class BaseTestCasePaas:
             sign = self.get_auth({"taskId": task_id})
             global_data_paas["header"]["Sign"] = sign
             logger.info(f"""请求headers--{str(global_data_paas.get("header")).replace("'", '"')}""")
-        res = requests.get(url=self.url + uri, params={"taskId": task_id}, headers=global_data_paas.get("header"), verify=False)
+        res = session.get(url=self.url + uri, params={"taskId": task_id}, headers=global_data_paas.get("header"), verify=False)
         if self.count == 90:
             assert False, logger.error(f'任务执行超时,已查询{self.count}次任务结果,res == {res.text}')
         res.raise_for_status()  # 抛出HTTP错误
@@ -88,7 +88,7 @@ class BaseTestCasePaas:
                 # return subTaskFailCount
                 # 判断子任务是否有失败，有失败调用子任务查询接口，打印详细信息
                 if subTaskFailCount != 0:
-                    res_detail = requests.get(url=self.url + f"/v1/subtask/list", params={"taskId": task_id},
+                    res_detail = session.get(url=self.url + f"/v1/subtask/list", params={"taskId": task_id},
                                               headers=global_data_paas.get("header"), verify=False)
                     # logger.error(f'任务执行失败数量:{subTaskFailCount}')
                     allure.attach(f"子任务查询详情--失败数量:{subTaskFailCount}-- {res_detail.text}", name="异步任务失败信息")
@@ -114,7 +114,7 @@ class BaseTestCasePaas:
         allure.attach(f"""{str(data).replace("'",'"')}""", "传参")
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_paas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_paas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f"""请求headers--{str(global_data_paas.get("header")).replace("'", '"')}""")
         allure.attach(f"{res.text}", "返回值")
@@ -137,7 +137,7 @@ class BaseTestCasePaas:
         allure.attach(f"""{str(data).replace("'",'"')}""", "传参")
         sign = self.get_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.get(url=self.url + uri, params=data, headers=global_data_paas.get("header"), verify=False)
+        res = session.get(url=self.url + uri, params=data, headers=global_data_paas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f"""请求headers--{str(global_data_paas.get("header")).replace("'", '"')}""")
         allure.attach(f"{res.text}", "返回值")
@@ -155,7 +155,7 @@ class BaseTestCasePaas:
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
         # logger.info(f'sign 为{sign}')
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_paas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_paas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f"""请求headers--{str(global_data_paas.get("header")).replace("'", '"')}""")
         # logger.info(f'test_instance_list res为{res.text}')
@@ -173,7 +173,7 @@ class BaseTestCasePaas:
         }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         logger.info(f'应用列表返回值--{res.text}')
         res_json = res.json()
@@ -196,7 +196,7 @@ class BaseTestCasePaas:
         }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         logger.info(f'文件列表返回值--{res.text}')
         res_json = res.json()
@@ -215,7 +215,7 @@ class BaseTestCasePaas:
             }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         instanceIds = jsonpath.jsonpath(res_json, "$..instanceId")
@@ -229,7 +229,7 @@ class BaseTestCasePaas:
         uri = "/v1/instance/machine/get"
         sign = self.get_auth()
         global_data_paas["header"]["Sign"] = sign
-        res = requests.get(self.url + uri, headers=global_data_paas.get("header"), verify=False)
+        res = session.get(self.url + uri, headers=global_data_paas.get("header"), verify=False)
         logger.info(f'查询设备机型返回值--{res.text}')
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
@@ -372,7 +372,7 @@ class BaseTestCasePaas:
         }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         logger.info(f'第{self.count}次查询应用上传状态返回值为 {res.text}')
@@ -392,7 +392,7 @@ class BaseTestCasePaas:
         }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         logger.info(f'查询应用返回值为 {res.text}')
@@ -405,7 +405,7 @@ class BaseTestCasePaas:
             }
             sign = self.post_auth(data)
             global_data_paas["header"]["Sign"] = sign
-            requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+            session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
             logger.info(f'应用已存在,appId为{appId[0]},已删除')
 
     def check_file_upload_status_paas(self):
@@ -419,7 +419,7 @@ class BaseTestCasePaas:
         }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         logger.info(f'第{self.count}次查询文件状态返回值为 {res.text}')
@@ -439,7 +439,7 @@ class BaseTestCasePaas:
         }
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+        res = session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
         res.raise_for_status()  # 抛出HTTP错误
         res_json = res.json()
         logger.info(f'查询文件返回值为 {res.text}')
@@ -452,6 +452,6 @@ class BaseTestCasePaas:
             }
             sign = self.post_auth(data)
             global_data_paas["header"]["Sign"] = sign
-            requests.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
+            session.post(self.url + uri, headers=global_data_paas.get("header"), json=data, verify=False)
             logger.info(f'文件已存在,fileId为{fileId[0]},已删除')
 

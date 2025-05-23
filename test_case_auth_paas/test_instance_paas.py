@@ -1,10 +1,8 @@
-import jsonpath, allure, random, requests, pytest, os
+import jsonpath, allure, random, pytest, os
 from test_case_auth_paas import logger
 from test_case_auth_paas.baseTestCasePaas import BaseTestCasePaas, global_data_paas
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from myutils.read_yaml import read_testcase_yaml
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from myutils.my_request import session
 
 
 @pytest.mark.run(order=5)
@@ -419,7 +417,7 @@ class TestInstancePaas(BaseTestCasePaas):
         allure.attach(f"{data}", "传参")
         sign = self.post_auth(data)
         global_data_paas["header"]["Sign"] = sign
-        res = requests.post(url=self.url + uri, json=data, headers=global_data_paas.get("header"), verify=False)
+        res = session.post(url=self.url + uri, json=data, headers=global_data_paas.get("header"), verify=False)
         logger.info(f'请求url--{res.url}')
         logger.info(f'请求headers--{res.headers}')
         # logger.info(f'test_instance_list res为{res.text}')

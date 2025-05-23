@@ -1,13 +1,10 @@
-import jsonpath, allure, random, requests, pytest, os
+import jsonpath, allure, random, pytest, os
 from test_case_auth_paas import logger
 from test_case_auth_paas.baseTestCasePaas import BaseTestCasePaas, global_data_paas
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from myutils.read_yaml import read_testcase_yaml
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-@pytest.mark.run(order=6)
+@pytest.mark.run(order=7)
 @pytest.mark.pressure
 @allure.feature("paas实例相关接口")
 class TestPressure(BaseTestCasePaas):

@@ -68,7 +68,7 @@ test_204d：yaml文件第一行内容
 
 test_pressure_paas：自定义测试方法名，注意不要重复
 
-其他地方不用修改
+*其他地方不用修改*
 
 **4、report目录**
 
@@ -77,3 +77,5 @@ html目录：生成的测试报告html包，查看需要借助allure命令
 result目录：测试报告源数据，已自动处理转换为上面的html格式
 
 openReport.bat：已写好的打开html包的批处理文件
+
+*注意main_new.py文件中allure_url变量，路径是否正确，不然执行完后自动打开报告失败*

@@ -1,9 +1,6 @@
-import jsonpath, allure,  requests, pytest, time
+import jsonpath, allure, pytest, time
 from test_case_auth_iaas import logger
 from test_case_auth_iaas.baseTestCaseIaas import BaseTestCaseIaas, global_data_iaas
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 @pytest.mark.run(order=6)
